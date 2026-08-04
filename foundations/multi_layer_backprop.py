@@ -26,25 +26,25 @@ class Solution:
         y_true = np.array(y_true) #(output_dim,)
 
         
-        z1 = np.dot(W1, x) + b1
+        z1 = x @ W1.T + b1
         a1 = np.maximum(z1, 0)
-        z2 = np.dot(a1, W2.T) + b2
+        z2 = a1 @ W2.T + b2
         y_pred = z2
 
         loss = np.mean(np.power(y_pred-y_true, 2))
 
         #dL/dw2
         dLdz2 = (2*(y_pred-y_true))/len(y_true)
-        dLdw2 = np.outer(dLdz2, a1) #a1 = dz2 / dw2
+        dLdw2 = dLdz2.reshape(-1, 1) @ a1.reshape(1, -1) #a1 = dz2 / dw2
 
         #dL/db2
         dLdb2 = dLdz2 # * 1 : 1 = dz2 / db2
 
         #dL/dw1
         da1dz1 = (z1 > 0).astype(np.float64)
-        dLda1 = np.dot(dLdz2,W2)
-        dLdz1 = dLda1 * da1dz1 
-        dLdw1 = np.outer(dLdz1, x)#W2 = dz2/da1, x = dz1/dw1
+        dLda1 = dLdz2.reshape(1, -1) @ W2
+        dLdz1 = dLda1.flatten() * da1dz1 
+        dLdw1 = dLdz1.reshape(-1, 1) @ x.reshape(1, -1) #W2 = dz2/da1, x = dz1/dw1
 
         #dL/db1
         dLdb1 = dLdz1
